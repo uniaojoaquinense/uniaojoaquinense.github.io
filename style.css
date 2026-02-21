@@ -63,6 +63,38 @@ main {
   background-color: #D79000;
 }
 
+/* ── Acordeão interno (subcategoria) ── */
+.accordion-inner {
+  background: #e0a800;
+  width: 100%;
+  color: black;
+  cursor: pointer;
+  padding: 10px 15px;
+  text-align: center;
+  border: none;
+  outline: none;
+  transition: background-color 0.4s;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  margin-top: 8px;
+  margin-bottom: 2px;
+  font-size: 0.9em;
+}
+
+.accordion-inner:hover,
+.accordion-inner.active {
+  background-color: #c89000;
+}
+
+.panel-inner {
+  background-color: #fff8e0;
+  display: none;
+  overflow: hidden;
+  border-radius: 0 0 5px 5px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+
 /* ── Painel ── */
 .panel {
   background-color: #FFE79E;
