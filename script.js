@@ -113,24 +113,44 @@ function buildAccordions(categorias) {
       .sort(([, a], [, b]) => a.ordem - b.ordem);
 
     subcatsOrdenadas.forEach(([chave, dadosSubcat]) => {
-      if (chave !== '__sem_subcategoria__') {
-        const titulo = document.createElement('p');
-        titulo.className = 'subcategoria-titulo';
-        titulo.textContent = chave;
-        painel.appendChild(titulo);
-      }
+      if (chave === '__sem_subcategoria__') {
+        // Links sem subcategoria: direto no painel
+        dadosSubcat.links.forEach(link => {
+          const a = document.createElement('a');
+          a.className = 'linksgerais';
+          a.href = link.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = link.nome;
+          painel.appendChild(a);
+        });
+      } else {
+        // Subcategoria: acordeão interno
+        const botaoInner = document.createElement('button');
+        botaoInner.className = 'accordion-inner';
+        botaoInner.textContent = chave;
 
-      dadosSubcat.links.forEach(link => {
-        const a = document.createElement('a');
-        a.className = 'linksgerais botaopanel';
-        a.href = link.url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.textContent = link.nome;
-        painel.appendChild(a);
-        painel.appendChild(document.createElement('br'));
-        painel.appendChild(document.createElement('p'));
-      });
+        const painelInner = document.createElement('div');
+        painelInner.className = 'panel-inner';
+
+        dadosSubcat.links.forEach(link => {
+          const a = document.createElement('a');
+          a.className = 'linksgerais';
+          a.href = link.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = link.nome;
+          painelInner.appendChild(a);
+        });
+
+        botaoInner.addEventListener('click', function () {
+          this.classList.toggle('active');
+          painelInner.style.display = painelInner.style.display === 'block' ? 'none' : 'block';
+        });
+
+        painel.appendChild(botaoInner);
+        painel.appendChild(painelInner);
+      }
     });
 
     botao.addEventListener('click', function () {
