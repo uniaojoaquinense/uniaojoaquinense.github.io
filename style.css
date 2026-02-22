@@ -175,9 +175,10 @@ main {
 /* ── Slider de imagens ── */
 .slider-container {
   width: 100%;
+  max-width: 540px;
   overflow: hidden;
   position: relative;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
   border-radius: 8px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
 }
@@ -259,6 +260,12 @@ main {
 @media only screen and (max-width: 800px) {
   #lista {
     width: 80vw;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .slider-container {
+    max-width: 270px;
   }
 }
 
