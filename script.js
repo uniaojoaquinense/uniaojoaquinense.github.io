@@ -3,8 +3,11 @@
 // ============================================================
 const API_KEY = 'AIzaSyAmW-hkAUHCnYc_4CIcN99HiNAlbc31-Qs';
 const SPREADSHEET_ID = '14wrXo2lohTXepgApiqsSQNIzaNH1bvjMLOaCXK65hWU';
-const SHEET_NAME = 'Sheet1'; // nome da aba na planilha
-const RANGE = `${SHEET_NAME}!A:F`; // colunas A até F
+const SHEET_NAME = 'Sheet1';          // aba com os links
+const SHEET_CONFIG = 'Sheet2';        // aba com as configurações visuais
+const RANGE = `${SHEET_NAME}!A:F`;   // colunas A até F
+const RANGE_CONFIG = `${SHEET_CONFIG}!A:B`; // chave | valor
+
 
 // ============================================================
 // DADOS MOCKADOS — usados enquanto a planilha não for configurada
@@ -25,6 +28,69 @@ const MOCK_DATA = [
 // ============================================================
 // FUNÇÕES PRINCIPAIS
 // ============================================================
+
+/**
+ * Busca as configurações visuais da Sheet2.
+ * Espera linhas no formato: [ chave, valor ]
+ * Chaves esperadas: handle, facebook, instagram
+ */
+async function fetchConfig() {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`;
+    const response = await fetch(url);
+    if (!response.ok) return {};
+
+    const data = await response.json();
+    const rows = data.values || [];
+
+    // Constrói objeto { chave: valor } ignorando a linha de cabeçalho
+    const config = {};
+    rows.forEach(row => {
+      const chave = (row[0] || '').trim().toLowerCase();
+      const valor = (row[1] || '').trim();
+      if (chave && chave !== 'chave') config[chave] = valor;
+    });
+    return config;
+  } catch (e) {
+    console.warn('Não foi possível carregar configurações da Sheet2:', e);
+    return {};
+  }
+}
+
+/**
+ * Aplica as configurações visuais no DOM.
+ * Campos suportados na Sheet2:
+ *   handle    → texto exibido abaixo da logo (sem o @)
+ *   facebook  → URL do Facebook
+ *   instagram → URL do Instagram
+ *   logo      → URL de imagem para a logo (opcional; se omitido usa brasao.png local)
+ */
+function applyConfig(config) {
+  // Handle (@usuario)
+  const handleEl = document.getElementById('handle');
+  if (handleEl && config.handle) {
+    handleEl.textContent = '@' + config.handle.replace(/^@/, '');
+  }
+
+  // Facebook
+  const fbEl = document.getElementById('link-facebook');
+  if (fbEl && config.facebook) {
+    fbEl.href = config.facebook;
+  }
+
+  // Instagram
+  const igEl = document.getElementById('link-instagram');
+  if (igEl && config.instagram) {
+    igEl.href = config.instagram;
+  }
+
+  // Logo — usa URL da Sheet2 se informado, caso contrário mantém brasao.png local
+  const logoEl = document.getElementById('logo-img');
+  if (logoEl && config.logo) {
+    logoEl.src = config.logo;
+  }
+  // favicon.ico fica como arquivo estático na raiz do repositório
+}
 
 /**
  * Busca dados da planilha via Google Sheets API v4.
@@ -171,9 +237,21 @@ async function init() {
   const loading = document.getElementById('loading');
   const erro = document.getElementById('erro');
 
+  // Busca configurações visuais (Sheet2) e links (Sheet1) em paralelo
+  const [config, rows] = await Promise.allSettled([
+    fetchConfig(),
+    fetchLinks()
+  ]);
+
+  // Aplica configurações visuais
+  if (config.status === 'fulfilled') {
+    applyConfig(config.value);
+  }
+
+  // Renderiza os acordeões com os links
   try {
-    const rows = await fetchLinks();
-    const categorias = agruparDados(rows);
+    const linhas = rows.status === 'fulfilled' ? rows.value : (() => { throw rows.reason; })();
+    const categorias = agruparDados(linhas);
     buildAccordions(categorias);
     loading.style.display = 'none';
   } catch (e) {
