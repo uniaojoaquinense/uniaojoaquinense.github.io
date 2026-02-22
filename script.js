@@ -58,12 +58,38 @@ async function fetchConfig() {
 }
 
 /**
+ * Converte um link de compartilhamento do Google Drive para URL direta de imagem.
+ * Aceita os formatos:
+ *   https://drive.google.com/file/d/FILE_ID/view?...
+ *   https://drive.google.com/open?id=FILE_ID
+ *   https://drive.google.com/uc?id=FILE_ID  (já é direto)
+ * Retorna a mesma URL se não for do Drive.
+ */
+function converterUrlDrive(url) {
+  if (!url) return url;
+
+  // Formato: /file/d/ID/view
+  const matchFile = url.match(/\/file\/d\/([^/?#]+)/);
+  if (matchFile) {
+    return `https://lh3.googleusercontent.com/d/${matchFile[1]}`;
+  }
+
+  // Formato: open?id=ID ou uc?id=ID&...
+  const matchId = url.match(/[?&]id=([^&]+)/);
+  if (matchId && url.includes('drive.google.com')) {
+    return `https://lh3.googleusercontent.com/d/${matchId[1]}`;
+  }
+
+  return url; // URL de outro domínio, usa direto
+}
+
+/**
  * Aplica as configurações visuais no DOM.
  * Campos suportados na Sheet2:
  *   handle    → texto exibido abaixo da logo (sem o @)
  *   facebook  → URL do Facebook
  *   instagram → URL do Instagram
- *   logo      → URL de imagem para a logo (opcional; se omitido usa brasao.png local)
+ *   logo      → URL de imagem para a logo (aceita links do Drive)
  */
 function applyConfig(config) {
   // Handle (@usuario)
@@ -84,10 +110,10 @@ function applyConfig(config) {
     igEl.href = config.instagram;
   }
 
-  // Logo — usa URL da Sheet2 se informado, caso contrário mantém brasao.png local
+  // Logo — converte link do Drive automaticamente se necessário
   const logoEl = document.getElementById('logo-img');
   if (logoEl && config.logo) {
-    logoEl.src = config.logo;
+    logoEl.src = converterUrlDrive(config.logo);
   }
   // favicon.ico fica como arquivo estático na raiz do repositório
 }
