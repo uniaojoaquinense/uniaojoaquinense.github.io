@@ -25,6 +25,19 @@
     <main>
       <section id="opcoes">
 
+        <!-- Slider de imagens (só aparece se houver slides na Sheet2) -->
+        <div class="slider-container" id="slider-container" style="display:none;">
+          <div class="slider" id="slider"></div>
+          <button class="slider-prev" onclick="prevSlide()">❮</button>
+          <button class="slider-next" onclick="nextSlide()">❯</button>
+        </div>
+
+        <!-- Modal de imagem em tela cheia -->
+        <div id="imageModal" onclick="closeModal()"
+          style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center; cursor:zoom-out;">
+          <img id="modalImage" style="max-width:90vw; max-height:90vh; border-radius:8px;">
+        </div>
+
         <div id="loading">
           <div class="spinner"></div>
           <p>Carregando links...</p>

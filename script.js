@@ -115,6 +115,16 @@ function applyConfig(config) {
   if (logoEl && config.logo) {
     logoEl.src = converterUrlDrive(config.logo);
   }
+
+  // Slider — coleta campos slide1, slide2, ... slideN
+  const slides = [];
+  let i = 1;
+  while (config[`slide${i}`]) {
+    slides.push(converterUrlDrive(config[`slide${i}`]));
+    i++;
+  }
+  if (slides.length > 0) buildSlider(slides);
+
   // favicon.ico fica como arquivo estático na raiz do repositório
 }
 
@@ -288,3 +298,63 @@ async function init() {
 }
 
 init();
+
+// ============================================================
+// SLIDER DE IMAGENS
+// ============================================================
+
+let sliderIndex = 0;
+
+/**
+ * Constrói o slider com as URLs de imagens fornecidas e o exibe.
+ */
+function buildSlider(urls) {
+  const container = document.getElementById('slider-container');
+  const slider = document.getElementById('slider');
+  slider.innerHTML = '';
+
+  urls.forEach(url => {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Imagem do slider';
+    img.draggable = false;
+    img.addEventListener('click', () => openModal(img));
+    slider.appendChild(img);
+  });
+
+  sliderIndex = 0;
+  _updateSlider();
+  container.style.display = 'block'; // exibe o slider
+
+  // Esconde setas se houver só 1 imagem
+  if (urls.length <= 1) {
+    document.querySelector('.slider-prev').style.display = 'none';
+    document.querySelector('.slider-next').style.display = 'none';
+  }
+}
+
+function _updateSlider() {
+  const slider = document.getElementById('slider');
+  if (!slider) return;
+  slider.style.transform = `translateX(${-sliderIndex * 100}%)`;
+}
+
+function showSlide(n) {
+  const total = document.querySelectorAll('#slider img').length;
+  if (total === 0) return;
+  sliderIndex = (n + total) % total;
+  _updateSlider();
+}
+
+function nextSlide() { showSlide(sliderIndex + 1); }
+function prevSlide() { showSlide(sliderIndex - 1); }
+
+function openModal(img) {
+  document.getElementById('modalImage').src = img.src;
+  const modal = document.getElementById('imageModal');
+  modal.style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('imageModal').style.display = 'none';
+}
