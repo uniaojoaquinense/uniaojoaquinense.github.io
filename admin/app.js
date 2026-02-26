@@ -177,7 +177,7 @@ async function salvarLink() {
 
     try {
         if (modoModal === 'adicionar') {
-            await fetch(sheetsUrl(RANGE_LINKS, '?valueInputOption=USER_ENTERED'), {
+            await fetch(sheetsUrl(RANGE_LINKS + ':append', '?valueInputOption=USER_ENTERED'), {
                 method: 'POST',
                 headers: authHeaders(),
                 body: JSON.stringify({ values: [row] })
