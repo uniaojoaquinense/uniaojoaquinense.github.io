@@ -253,7 +253,6 @@ async function moverLink(linha, direcao) {
     const link = todosLinks.find(l => l.linha === linha);
     if (!link) return;
 
-    // Reconstruir lista ordenada da mesma categoria (mesma lógica do render)
     const linksNaCategoria = todosLinks
         .filter(l => l.categoria === link.categoria)
         .sort((a, b) => (a.ordemSubcat || 99) - (b.ordemSubcat || 99) || a.linha - b.linha);
@@ -264,25 +263,34 @@ async function moverLink(linha, direcao) {
 
     const outro = linksNaCategoria[novoIdx];
 
-    // Trocar o conteúdo COMPLETO das duas linhas
+    // Guardar dados originais
     const rowLink = [link.categoria, link.ordemCat, link.subcategoria, link.ordemSubcat, link.nomeLink, link.url];
     const rowOutro = [outro.categoria, outro.ordemCat, outro.subcategoria, outro.ordemSubcat, outro.nomeLink, outro.url];
 
-    const updates = [
-        { range: `Sheet1!A${link.linha}:F${link.linha}`, values: [rowOutro] },
-        { range: `Sheet1!A${outro.linha}:F${outro.linha}`, values: [rowLink] }
-    ];
+    // Atualizar estado local PRIMEIRO (trocar dados, manter linhas)
+    const linhaLink = link.linha;
+    const linhaOutro = outro.linha;
+    Object.assign(link, { categoria: rowOutro[0], ordemCat: rowOutro[1], subcategoria: rowOutro[2], ordemSubcat: rowOutro[3], nomeLink: rowOutro[4], url: rowOutro[5], linha: linhaLink });
+    Object.assign(outro, { categoria: rowLink[0], ordemCat: rowLink[1], subcategoria: rowLink[2], ordemSubcat: rowLink[3], nomeLink: rowLink[4], url: rowLink[5], linha: linhaOutro });
 
+    // Re-renderizar imediatamente
+    renderizarLinks(todosLinks);
+
+    // Salvar na API em background
     try {
         await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`, {
             method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: updates })
+            body: JSON.stringify({
+                valueInputOption: 'USER_ENTERED', data: [
+                    { range: `Sheet1!A${linhaLink}:F${linhaLink}`, values: [rowOutro] },
+                    { range: `Sheet1!A${linhaOutro}:F${linhaOutro}`, values: [rowLink] }
+                ]
+            })
         });
-        toast('✅ Ordem atualizada!', 'success');
-        await carregarLinks();
     } catch (e) {
-        toast('Erro ao mover: ' + e.message, 'error');
+        toast('Erro ao salvar ordem: ' + e.message, 'error');
+        await carregarLinks(); // Reverter em caso de erro
     }
 }
 
@@ -291,47 +299,39 @@ async function moverCategoria(categoria, direcao) {
     if (linksDaCategoria.length === 0) return;
 
     const ordemAtual = linksDaCategoria[0].ordemCat;
-
-    // Find all unique categories and their order
     const categoriasOrdenadas = [...new Map(todosLinks.map(l => [l.categoria, l.ordemCat]))]
         .sort((a, b) => a[1] - b[1]);
 
     const indexCategoria = categoriasOrdenadas.findIndex(([cat]) => cat === categoria);
     if (indexCategoria === -1) return;
 
-    const novoIndexCategoria = indexCategoria + direcao;
-    if (novoIndexCategoria < 0 || novoIndexCategoria >= categoriasOrdenadas.length) return;
+    const novoIndex = indexCategoria + direcao;
+    if (novoIndex < 0 || novoIndex >= categoriasOrdenadas.length) return;
 
-    const [categoriaParaTrocar, ordemTroca] = categoriasOrdenadas[novoIndexCategoria];
-
-    // Update order for all links in the current category
-    const updates = linksDaCategoria.map(l => ({
-        range: `Sheet1!B${l.linha}`,
-        values: [[ordemTroca]]
-    }));
-
-    // Update order for all links in the category to swap with
+    const [categoriaParaTrocar, ordemTroca] = categoriasOrdenadas[novoIndex];
     const linksParaTrocar = todosLinks.filter(l => l.categoria === categoriaParaTrocar);
-    linksParaTrocar.forEach(l => {
-        updates.push({
-            range: `Sheet1!B${l.linha}`,
-            values: [[ordemAtual]]
-        });
-    });
+
+    // Atualizar estado local PRIMEIRO
+    linksDaCategoria.forEach(l => l.ordemCat = ordemTroca);
+    linksParaTrocar.forEach(l => l.ordemCat = ordemAtual);
+
+    // Re-renderizar imediatamente
+    renderizarLinks(todosLinks);
+
+    // Salvar na API em background
+    const updates = [];
+    linksDaCategoria.forEach(l => updates.push({ range: `Sheet1!B${l.linha}`, values: [[ordemTroca]] }));
+    linksParaTrocar.forEach(l => updates.push({ range: `Sheet1!B${l.linha}`, values: [[ordemAtual]] }));
 
     try {
         await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`, {
             method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({
-                valueInputOption: 'USER_ENTERED',
-                data: updates
-            })
+            body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: updates })
         });
-        toast('✅ Ordem da categoria atualizada!', 'success');
-        await carregarLinks();
     } catch (e) {
-        toast('Erro ao mover categoria: ' + e.message, 'error');
+        toast('Erro ao salvar ordem: ' + e.message, 'error');
+        await carregarLinks(); // Reverter
     }
 }
 
