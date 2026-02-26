@@ -264,10 +264,13 @@ async function moverLink(linha, direcao) {
 
     const outro = linksNaCategoria[novoIdx];
 
-    // Trocar subcategoria e ordem entre os dois links
+    // Trocar o conteúdo COMPLETO das duas linhas
+    const rowLink = [link.categoria, link.ordemCat, link.subcategoria, link.ordemSubcat, link.nomeLink, link.url];
+    const rowOutro = [outro.categoria, outro.ordemCat, outro.subcategoria, outro.ordemSubcat, outro.nomeLink, outro.url];
+
     const updates = [
-        { range: `Sheet1!C${link.linha}:D${link.linha}`, values: [[outro.subcategoria, outro.ordemSubcat]] },
-        { range: `Sheet1!C${outro.linha}:D${outro.linha}`, values: [[link.subcategoria, link.ordemSubcat]] }
+        { range: `Sheet1!A${link.linha}:F${link.linha}`, values: [rowOutro] },
+        { range: `Sheet1!A${outro.linha}:F${outro.linha}`, values: [rowLink] }
     ];
 
     try {
