@@ -54,6 +54,9 @@
         <div id="tab-links" class="tab-content active">
             <div class="toolbar">
                 <input type="text" id="busca" placeholder="🔍 Buscar link..." oninput="filtrarLinks()">
+                <button class="btn-icon" id="btn-reorganizar" onclick="toggleReorganizar()" title="Reorganizar">
+                    <i class="fa-solid fa-arrows-up-down"></i>
+                </button>
                 <button class="btn-primary" onclick="abrirModal('adicionar')">
                     <i class="fa-solid fa-plus"></i> Novo
                 </button>

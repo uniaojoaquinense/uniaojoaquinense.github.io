@@ -16,6 +16,7 @@ let accessToken = null;
 let todosLinks = [];     // [{linha, categoria, ordemCat, subcategoria, ordemSubcat, nomeLink, url}]
 let modoModal = null;   // 'adicionar' | 'editar'
 let linhaEditar = null;
+let modoReorganizar = false;
 
 // ═══════════════════════════════════════════════════════
 // Auth — Google Identity Services (token model)
@@ -129,23 +130,36 @@ function renderizarLinks(links) {
     });
 
     let html = '';
-    Object.entries(grupos)
-        .sort(([, a], [, b]) => (a[0]?.ordemCat || 99) - (b[0]?.ordemCat || 99))
-        .forEach(([cat, items]) => {
-            html += `<div class="cat-header">${cat}</div>`;
-            items.forEach(l => {
-                const sub = l.subcategoria ? `<span class="link-subcat">${l.subcategoria}</span>` : '';
-                html += `
-          <div class="link-card" onclick="abrirModal('editar', ${l.linha})">
+    const gruposOrdenados = Object.entries(grupos)
+        .sort(([, a], [, b]) => (a[0]?.ordemCat || 99) - (b[0]?.ordemCat || 99));
+
+    gruposOrdenados.forEach(([cat, items], gi) => {
+        const reorderBtns = modoReorganizar
+            ? `<span class="reorder-cat-btns">
+                 <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${cat}', -1)" ${gi === 0 ? 'disabled' : ''}>↑</button>
+                 <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${cat}', 1)" ${gi === gruposOrdenados.length - 1 ? 'disabled' : ''}>↓</button>
+               </span>`
+            : '';
+        html += `<div class="cat-header">${cat} ${reorderBtns}</div>`;
+
+        items.forEach((l, i) => {
+            const arrows = modoReorganizar
+                ? `<span class="reorder-btns" onclick="event.stopPropagation()">
+                     <button class="btn-reorder" onclick="moverLink(${l.linha}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+                     <button class="btn-reorder" onclick="moverLink(${l.linha}, 1)" ${i === items.length - 1 ? 'disabled' : ''}>↓</button>
+                   </span>`
+                : '<i class="fa-solid fa-chevron-right"></i>';
+            html += `
+          <div class="link-card ${modoReorganizar ? 'reorder-mode' : ''}" onclick="${modoReorganizar ? '' : `abrirModal('editar', ${l.linha})`}">
             <div class="link-info">
               <div class="link-cat">${cat}${l.subcategoria ? ' › ' + l.subcategoria : ''}</div>
               <div class="link-nome">${l.nomeLink || '(sem nome)'}</div>
               <div class="link-url">${l.url || '(sem url)'}</div>
             </div>
-            <i class="fa-solid fa-chevron-right"></i>
+            ${arrows}
           </div>`;
-            });
         });
+    });
 
     container.innerHTML = html;
 }
@@ -171,7 +185,7 @@ async function salvarLink() {
     if (!nome) { modalStatus('Informe o nome do link.', 'error'); return; }
     if (!url) { modalStatus('Informe a URL.', 'error'); return; }
 
-    const row = [cat.nome, cat.ordem, sub.nome, sub.nome ? sub.ordem : '', nome, url];
+    const row = [cat.nome, cat.ordem, sub.nome, sub.ordem, nome, url];
     document.getElementById('btn-salvar').disabled = true;
     modalStatus('Salvando...', '');
 
@@ -229,6 +243,110 @@ async function removerLink() {
         modalStatus('Erro ao remover: ' + e.message, 'error');
     }
 }
+
+async function moverLink(linha, direcao) {
+    const linkIndex = todosLinks.findIndex(l => l.linha === linha);
+    if (linkIndex === -1) return;
+
+    const link = todosLinks[linkIndex];
+    const categoria = link.categoria;
+    const subcategoria = link.subcategoria;
+
+    // Filter links in the same category/subcategory
+    const linksNaMesmaSecao = todosLinks.filter(l =>
+        l.categoria === categoria && l.subcategoria === subcategoria
+    ).sort((a, b) => a.ordemSubcat - b.ordemSubcat || a.linha - b.linha); // Sort by subcat order, then by original row for stability
+
+    const indexNaSecao = linksNaMesmaSecao.findIndex(l => l.linha === linha);
+    if (indexNaSecao === -1) return;
+
+    const novoIndexNaSecao = indexNaSecao + direcao;
+
+    if (novoIndexNaSecao < 0 || novoIndexNaSecao >= linksNaMesmaSecao.length) return; // Out of bounds
+
+    const linkParaTrocar = linksNaMesmaSecao[novoIndexNaSecao];
+
+    // Swap the order values
+    const ordemAtual = link.ordemSubcat;
+    const ordemTroca = linkParaTrocar.ordemSubcat;
+
+    // If orders are the same, assign new distinct orders
+    if (ordemAtual === ordemTroca) {
+        link.ordemSubcat = ordemAtual + direcao;
+        linkParaTrocar.ordemSubcat = ordemTroca - direcao;
+    } else {
+        link.ordemSubcat = ordemTroca;
+        linkParaTrocar.ordemSubcat = ordemAtual;
+    }
+
+    // Update the sheet
+    try {
+        await fetch(sheetsUrl(`Sheet1!D${link.linha}`, '?valueInputOption=USER_ENTERED'), {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ values: [[link.ordemSubcat]] })
+        });
+        await fetch(sheetsUrl(`Sheet1!D${linkParaTrocar.linha}`, '?valueInputOption=USER_ENTERED'), {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ values: [[linkParaTrocar.ordemSubcat]] })
+        });
+        toast('✅ Ordem atualizada!', 'success');
+        await carregarLinks(); // Reload to reflect changes
+    } catch (e) {
+        toast('Erro ao mover link: ' + e.message, 'error');
+    }
+}
+
+async function moverCategoria(categoria, direcao) {
+    const linksDaCategoria = todosLinks.filter(l => l.categoria === categoria);
+    if (linksDaCategoria.length === 0) return;
+
+    const ordemAtual = linksDaCategoria[0].ordemCat;
+
+    // Find all unique categories and their order
+    const categoriasOrdenadas = [...new Map(todosLinks.map(l => [l.categoria, l.ordemCat]))]
+        .sort((a, b) => a[1] - b[1]);
+
+    const indexCategoria = categoriasOrdenadas.findIndex(([cat]) => cat === categoria);
+    if (indexCategoria === -1) return;
+
+    const novoIndexCategoria = indexCategoria + direcao;
+    if (novoIndexCategoria < 0 || novoIndexCategoria >= categoriasOrdenadas.length) return;
+
+    const [categoriaParaTrocar, ordemTroca] = categoriasOrdenadas[novoIndexCategoria];
+
+    // Update order for all links in the current category
+    const updates = linksDaCategoria.map(l => ({
+        range: `Sheet1!B${l.linha}`,
+        values: [[ordemTroca]]
+    }));
+
+    // Update order for all links in the category to swap with
+    const linksParaTrocar = todosLinks.filter(l => l.categoria === categoriaParaTrocar);
+    linksParaTrocar.forEach(l => {
+        updates.push({
+            range: `Sheet1!B${l.linha}`,
+            values: [[ordemAtual]]
+        });
+    });
+
+    try {
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                valueInputOption: 'USER_ENTERED',
+                data: updates
+            })
+        });
+        toast('✅ Ordem da categoria atualizada!', 'success');
+        await carregarLinks();
+    } catch (e) {
+        toast('Erro ao mover categoria: ' + e.message, 'error');
+    }
+}
+
 
 // ═══════════════════════════════════════════════════════
 // Config (Sheet2)
@@ -371,9 +489,11 @@ function onSubChange() {
 function getCatValue() {
     const sel = document.getElementById('m-categoria');
     if (sel.value === '__nova__') {
+        // Auto-calcular próxima ordem
+        const maxOrdem = todosLinks.length > 0 ? Math.max(...todosLinks.map(l => l.ordemCat)) : 0;
         return {
             nome: document.getElementById('m-nova-cat').value.trim(),
-            ordem: Number(document.getElementById('m-ordem-cat').value) || 99
+            ordem: maxOrdem + 1
         };
     }
     const link = todosLinks.find(l => l.categoria === sel.value);
@@ -384,9 +504,13 @@ function getSubValue() {
     const sel = document.getElementById('m-subcategoria');
     if (sel.value === '__sem__') return { nome: '', ordem: '' };
     if (sel.value === '__nova__') {
+        // Auto-calcular próxima ordem
+        const catNome = getCatValue().nome;
+        const existentes = todosLinks.filter(l => l.categoria === catNome && l.subcategoria);
+        const maxOrdem = existentes.length > 0 ? Math.max(...existentes.map(l => l.ordemSubcat)) : 0;
         return {
             nome: document.getElementById('m-nova-sub').value.trim(),
-            ordem: Number(document.getElementById('m-ordem-sub').value) || 99
+            ordem: maxOrdem + 1
         };
     }
     const link = todosLinks.find(l => l.subcategoria === sel.value);
@@ -401,6 +525,16 @@ function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
     document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+function toggleReorganizar() {
+    modoReorganizar = !modoReorganizar;
+    const btn = document.getElementById('btn-reorganizar');
+    btn.classList.toggle('active', modoReorganizar);
+    btn.innerHTML = modoReorganizar
+        ? '<i class="fa-solid fa-check"></i> Pronto'
+        : '<i class="fa-solid fa-arrows-up-down"></i>';
+    renderizarLinks(todosLinks);
 }
 
 function toast(msg, type = '') {

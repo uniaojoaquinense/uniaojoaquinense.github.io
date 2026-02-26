@@ -339,10 +339,71 @@ header h1 {
     padding: 16px 0 8px;
     border-bottom: 1px solid rgba(245, 186, 10, 0.15);
     margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .cat-header:first-child {
     padding-top: 0;
+}
+
+/* ── Reorganizar ── */
+#btn-reorganizar {
+    font-size: 16px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+}
+
+#btn-reorganizar.active {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+}
+
+.btn-reorder {
+    background: var(--bg3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--gold);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-reorder:hover:not(:disabled) {
+    background: var(--gold);
+    color: #000;
+}
+
+.btn-reorder:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.reorder-btns,
+.reorder-cat-btns {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.link-card.reorder-mode {
+    cursor: default;
+    border-color: rgba(245, 186, 10, 0.2);
+    background: rgba(245, 186, 10, 0.04);
+}
+
+.link-card.reorder-mode:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 /* ── Modal ── */
