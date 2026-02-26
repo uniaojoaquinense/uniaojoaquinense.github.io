@@ -280,41 +280,35 @@ async function moverLink(linha, direcao) {
 // Reorganizar — Mover subcategoria inteira
 // ═══════════════════════════════════════════════════════
 async function moverSubcategoria(categoria, subcategoria, direcao) {
-    const subcats = [...new Map(
-        todosLinks.filter(l => l.categoria === categoria && l.subcategoria)
-            .map(l => [l.subcategoria, l.ordemSubcat || 99])
-    )].sort((a, b) => a[1] - b[1]);
+    // Pegar nomes únicos de subcategorias, ordenados
+    const subcatNomes = [];
+    const visto = new Set();
+    todosLinks
+        .filter(l => l.categoria === categoria && l.subcategoria)
+        .sort((a, b) => (a.ordemSubcat || 99) - (b.ordemSubcat || 99))
+        .forEach(l => { if (!visto.has(l.subcategoria)) { visto.add(l.subcategoria); subcatNomes.push(l.subcategoria); } });
 
-    const idx = subcats.findIndex(([n]) => n === subcategoria);
+    const idx = subcatNomes.indexOf(subcategoria);
     if (idx === -1) return;
     const novoIdx = idx + direcao;
-    if (novoIdx < 0 || novoIdx >= subcats.length) return;
+    if (novoIdx < 0 || novoIdx >= subcatNomes.length) return;
 
-    const [subTroca, ordemTroca] = subcats[novoIdx];
-    const ordemAtual = subcats[idx][1];
+    // Swap no array
+    [subcatNomes[idx], subcatNomes[novoIdx]] = [subcatNomes[novoIdx], subcatNomes[idx]];
 
-    // Se ordens iguais, atribuir valores distintos
-    let novaOrdemA, novaOrdemB;
-    if (ordemAtual === ordemTroca) {
-        novaOrdemA = novoIdx + 1;
-        novaOrdemB = idx + 1;
-    } else {
-        novaOrdemA = ordemTroca;
-        novaOrdemB = ordemAtual;
-    }
-
-    // Atualizar local
-    const linksA = todosLinks.filter(l => l.categoria === categoria && l.subcategoria === subcategoria);
-    const linksB = todosLinks.filter(l => l.categoria === categoria && l.subcategoria === subTroca);
-    linksA.forEach(l => l.ordemSubcat = novaOrdemA);
-    linksB.forEach(l => l.ordemSubcat = novaOrdemB);
+    // Renumerar TUDO 1, 2, 3...
+    const updates = [];
+    subcatNomes.forEach((nome, i) => {
+        const ordem = i + 1;
+        todosLinks.filter(l => l.categoria === categoria && l.subcategoria === nome)
+            .forEach(l => {
+                l.ordemSubcat = ordem;
+                updates.push({ range: `Sheet1!D${l.linha}`, values: [[ordem]] });
+            });
+    });
 
     renderizarLinks(todosLinks);
 
-    // Salvar
-    const updates = [];
-    linksA.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[novaOrdemA]] }));
-    linksB.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[novaOrdemB]] }));
     try {
         await fetch(batchUpdateUrl(), {
             method: 'POST', headers: authHeaders(),
@@ -327,25 +321,34 @@ async function moverSubcategoria(categoria, subcategoria, direcao) {
 // Reorganizar — Mover categoria inteira
 // ═══════════════════════════════════════════════════════
 async function moverCategoria(categoria, direcao) {
-    const linksDaCat = todosLinks.filter(l => l.categoria === categoria);
-    if (linksDaCat.length === 0) return;
-    const ordemAtual = linksDaCat[0].ordemCat;
-    const catsOrd = [...new Map(todosLinks.map(l => [l.categoria, l.ordemCat]))].sort((a, b) => a[1] - b[1]);
-    const idx = catsOrd.findIndex(([c]) => c === categoria);
+    // Pegar nomes únicos de categorias, ordenados
+    const catNomes = [];
+    const visto = new Set();
+    todosLinks
+        .sort((a, b) => a.ordemCat - b.ordemCat)
+        .forEach(l => { if (!visto.has(l.categoria)) { visto.add(l.categoria); catNomes.push(l.categoria); } });
+
+    const idx = catNomes.indexOf(categoria);
     if (idx === -1) return;
     const novoIdx = idx + direcao;
-    if (novoIdx < 0 || novoIdx >= catsOrd.length) return;
+    if (novoIdx < 0 || novoIdx >= catNomes.length) return;
 
-    const [catTroca, ordemTroca] = catsOrd[novoIdx];
-    const linksTroca = todosLinks.filter(l => l.categoria === catTroca);
+    // Swap no array
+    [catNomes[idx], catNomes[novoIdx]] = [catNomes[novoIdx], catNomes[idx]];
 
-    linksDaCat.forEach(l => l.ordemCat = ordemTroca);
-    linksTroca.forEach(l => l.ordemCat = ordemAtual);
+    // Renumerar TUDO 1, 2, 3...
+    const updates = [];
+    catNomes.forEach((nome, i) => {
+        const ordem = i + 1;
+        todosLinks.filter(l => l.categoria === nome)
+            .forEach(l => {
+                l.ordemCat = ordem;
+                updates.push({ range: `Sheet1!B${l.linha}`, values: [[ordem]] });
+            });
+    });
+
     renderizarLinks(todosLinks);
 
-    const updates = [];
-    linksDaCat.forEach(l => updates.push({ range: `Sheet1!B${l.linha}`, values: [[ordemTroca]] }));
-    linksTroca.forEach(l => updates.push({ range: `Sheet1!B${l.linha}`, values: [[ordemAtual]] }));
     try {
         await fetch(batchUpdateUrl(), {
             method: 'POST', headers: authHeaders(),
