@@ -1,96 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link href='https://fonts.googleapis.com/css?family=Montserrat|Staatliches&display=swap' rel='stylesheet'/>
-<link rel="stylesheet" href="style.css">
-<script>href="/script.js"</script>
-<link rel="shortcut icon" href="/imgs/Design-sem-nome-_15_.ico">
-<title>Demotree</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Links e recursos da União Joaquinense DeMolay.">
+  <title>União Joaquinense</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Staatliches&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
   <div id="arvore">
+
     <div id="logo">
-    <img draggable="false" src="imgs/brasao.png">
-    <br />
-    <p>
-    <b>@uniaojoaquinense</b>
+      <img id="logo-img" draggable="false" src="imgs/brasao.png" alt="Brasão União Joaquinense">
+      <br>
+      <p><b id="handle">@uniaojoaquinense</b></p>
+    </div>
+
+    <main>
+      <section id="opcoes">
+
+        <!-- Slider de imagens (só aparece se houver slides na Sheet2) -->
+        <div class="slider-container" id="slider-container" style="display:none;">
+          <div class="slider" id="slider"></div>
+          <button class="slider-prev" onclick="prevSlide()">❮</button>
+          <button class="slider-next" onclick="nextSlide()">❯</button>
+        </div>
+
+        <!-- Modal de imagem em tela cheia -->
+        <div id="imageModal" onclick="closeModal()"
+          style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center; cursor:zoom-out;">
+          <img id="modalImage" style="max-width:90vw; max-height:90vh; border-radius:8px;">
+        </div>
+
+        <div id="loading">
+          <div class="spinner"></div>
+          <p>Carregando links...</p>
+        </div>
+
+        <div id="erro" style="display:none;">
+          <p>⚠️ Não foi possível carregar os links. Tente novamente mais tarde.</p>
+        </div>
+
+        <ul id="lista"></ul>
+
+        <div class="icon-bar">
+          <a id="link-facebook" href="https://www.facebook.com/DeMolayUniaoJoaquinense300/" target="_blank"
+            class="facebook" aria-label="Facebook">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a id="link-instagram" href="https://www.instagram.com/demolayuniaojoaquinense/" target="_blank"
+            class="instagram" aria-label="Instagram">
+            <i class="fa fa-instagram"></i>
+          </a>
+        </div>
+
+      </section>
+    </main>
+
   </div>
 
-        
-  <!-- <header class="tambut">
-    <h1 id="titulo"> Demotree </h1>
-    <img id="myImg" src="imgs/calendario20232.png" alt="Calendário 2023/2" >
-    <div id="myModal" class="modal">
-      <span class="close">&times;</span>
-      <img class="modal-content" id="img01">
-      <div id="caption"></div>
-    <p> <p>
-  </header> -->
-        
-<main>
-
-  <section id="opcoes">
-    <ul id="lista"> 
-      <li class="lista">
-        <button  id="separaacordeon"class="accordion"><big><b>Modelos</b></big></button>
-        <div class="panel"><p>
-          <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/1gDLteGMZLD3FICia58WqMAX6iRosqebB?usp=sharing" target="_blank">Modelo de Indicação</a><br><p><p>   
-            <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/14Bzjd6yXrXeXgXZ59pKcHLmdKLHUz_BE?usp=drive_link" target="_blank">Modelo de Justificativa</a><br><p><p>   
-           </div>
-        </li>
-      <li class="lista">
-        <button id="separaacordeon" class="accordion" ><big><b>Projetos</b></big></button>
-          <div class="panel"><p>
-            
-          <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/108sYjwwfoMJe00KVRsNS7IMA0zBhN1Na?usp=sharing" target="_blank">Modelo de Plano de Ação</a><br><p><p>
-            <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/1dxyZoE040bc8i8cQfGT0l9faumsdMnq0?usp=sharing" target="_blank">Projetos em Execução</a><br><p><p>
-            
-            <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/1lPJQc625sP1C_dra9WoinbWwuC_PyhnZ?usp=sharing" target="_blank">Projetos Finalizados</a><br><p><p>
-            </div>
-      </li>
-      <li class="lista">
-        <button  id="separaacordeon"class="accordion"><big><b>Secretaria</b></big></button>
-        <div class="panel">
-          <p>          <a class="linksgerais botaopanel"; href="https://drive.google.com/drive/folders/15r6CyAQn6UE6gOANXflZRzUy2xVqAje7?usp=sharing" target="_blank">Área do Escrivão</a><br><p><p>
-          </p>
-        </div>
-      </li>
-      <li class="lista">
-        <button  id="separaacordeon" class="accordion" ><big><b>Tesouraria</b></big></button>
-        <div class="panel">
-          <p>Lorem ipsum...</p>
-        </div> 
-      </li>
-      <li class="lista">
-        <button  id="separaacordeon"class="accordion"><big><b>Estudos</b></big></button>
-        <div class="panel">
-          <p>          
-            <a 
-              class="linksgerais botaopanel" 
-              href="https://drive.google.com/drive/folders/1haVXjqETVtgim8YwA0fnRMJzdH2W81Lw?usp=sharing="_blank">
-              Acervo de Conhecimento
-            </a>
-          </p>
-        </div>
-      </li>
-    </ul>
-    
-  <div class="icon-bar">
-    <a href="https://www.facebook.com/DeMolayUniaoJoaquinense300/" target="_blank" class="facebook"><i class="fa fa-facebook"></i></a> 
-    
-    <a href="https://www.instagram.com/demolayuniaojoaquinense/" target="_blank"class="instagram"><i class="fa fa-instagram"></i></a> 
-  </div>
-  </div>
-    <div><br></div>
-  </div>
-  </section>
-  
-</main>        
- 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
+
+</html>
