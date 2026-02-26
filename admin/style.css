@@ -395,6 +395,23 @@ header h1 {
     margin-left: 8px;
 }
 
+.subcat-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 10px 4px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-style: italic;
+}
+
+.btn-reorder-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
 .link-card.reorder-mode {
     cursor: default;
     border-color: rgba(245, 186, 10, 0.2);
