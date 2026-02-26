@@ -122,18 +122,23 @@ function renderizarLinks(links) {
     }
     vazio.style.display = 'none';
 
-    // Agrupar por categoria
+    // Agrupar por categoria, com subcats ordenadas
     const grupos = {};
     links.forEach(l => {
-        if (!grupos[l.categoria]) grupos[l.categoria] = [];
-        grupos[l.categoria].push(l);
+        if (!grupos[l.categoria]) grupos[l.categoria] = { ordemCat: l.ordemCat, links: [] };
+        grupos[l.categoria].links.push(l);
+    });
+    // Ordenar links dentro de cada categoria por ordemSubcat e depois por linha
+    Object.values(grupos).forEach(g => {
+        g.links.sort((a, b) => (a.ordemSubcat || 99) - (b.ordemSubcat || 99) || a.linha - b.linha);
     });
 
     let html = '';
     const gruposOrdenados = Object.entries(grupos)
-        .sort(([, a], [, b]) => (a[0]?.ordemCat || 99) - (b[0]?.ordemCat || 99));
+        .sort(([, a], [, b]) => a.ordemCat - b.ordemCat);
 
-    gruposOrdenados.forEach(([cat, items], gi) => {
+    gruposOrdenados.forEach(([cat, dadosCat], gi) => {
+        const items = dadosCat.links;
         const reorderBtns = modoReorganizar
             ? `<span class="reorder-cat-btns">
                  <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${cat}', -1)" ${gi === 0 ? 'disabled' : ''}>↑</button>
@@ -245,56 +250,36 @@ async function removerLink() {
 }
 
 async function moverLink(linha, direcao) {
-    const linkIndex = todosLinks.findIndex(l => l.linha === linha);
-    if (linkIndex === -1) return;
+    const link = todosLinks.find(l => l.linha === linha);
+    if (!link) return;
 
-    const link = todosLinks[linkIndex];
-    const categoria = link.categoria;
-    const subcategoria = link.subcategoria;
+    // Reconstruir lista ordenada da mesma categoria (mesma lógica do render)
+    const linksNaCategoria = todosLinks
+        .filter(l => l.categoria === link.categoria)
+        .sort((a, b) => (a.ordemSubcat || 99) - (b.ordemSubcat || 99) || a.linha - b.linha);
 
-    // Filter links in the same category/subcategory
-    const linksNaMesmaSecao = todosLinks.filter(l =>
-        l.categoria === categoria && l.subcategoria === subcategoria
-    ).sort((a, b) => a.ordemSubcat - b.ordemSubcat || a.linha - b.linha); // Sort by subcat order, then by original row for stability
+    const idx = linksNaCategoria.findIndex(l => l.linha === linha);
+    const novoIdx = idx + direcao;
+    if (novoIdx < 0 || novoIdx >= linksNaCategoria.length) return;
 
-    const indexNaSecao = linksNaMesmaSecao.findIndex(l => l.linha === linha);
-    if (indexNaSecao === -1) return;
+    const outro = linksNaCategoria[novoIdx];
 
-    const novoIndexNaSecao = indexNaSecao + direcao;
+    // Trocar subcategoria e ordem entre os dois links
+    const updates = [
+        { range: `Sheet1!C${link.linha}:D${link.linha}`, values: [[outro.subcategoria, outro.ordemSubcat]] },
+        { range: `Sheet1!C${outro.linha}:D${outro.linha}`, values: [[link.subcategoria, link.ordemSubcat]] }
+    ];
 
-    if (novoIndexNaSecao < 0 || novoIndexNaSecao >= linksNaMesmaSecao.length) return; // Out of bounds
-
-    const linkParaTrocar = linksNaMesmaSecao[novoIndexNaSecao];
-
-    // Swap the order values
-    const ordemAtual = link.ordemSubcat;
-    const ordemTroca = linkParaTrocar.ordemSubcat;
-
-    // If orders are the same, assign new distinct orders
-    if (ordemAtual === ordemTroca) {
-        link.ordemSubcat = ordemAtual + direcao;
-        linkParaTrocar.ordemSubcat = ordemTroca - direcao;
-    } else {
-        link.ordemSubcat = ordemTroca;
-        linkParaTrocar.ordemSubcat = ordemAtual;
-    }
-
-    // Update the sheet
     try {
-        await fetch(sheetsUrl(`Sheet1!D${link.linha}`, '?valueInputOption=USER_ENTERED'), {
-            method: 'PUT',
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`, {
+            method: 'POST',
             headers: authHeaders(),
-            body: JSON.stringify({ values: [[link.ordemSubcat]] })
-        });
-        await fetch(sheetsUrl(`Sheet1!D${linkParaTrocar.linha}`, '?valueInputOption=USER_ENTERED'), {
-            method: 'PUT',
-            headers: authHeaders(),
-            body: JSON.stringify({ values: [[linkParaTrocar.ordemSubcat]] })
+            body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data: updates })
         });
         toast('✅ Ordem atualizada!', 'success');
-        await carregarLinks(); // Reload to reflect changes
+        await carregarLinks();
     } catch (e) {
-        toast('Erro ao mover link: ' + e.message, 'error');
+        toast('Erro ao mover: ' + e.message, 'error');
     }
 }
 
