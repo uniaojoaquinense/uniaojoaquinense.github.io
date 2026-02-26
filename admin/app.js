@@ -293,18 +293,28 @@ async function moverSubcategoria(categoria, subcategoria, direcao) {
     const [subTroca, ordemTroca] = subcats[novoIdx];
     const ordemAtual = subcats[idx][1];
 
+    // Se ordens iguais, atribuir valores distintos
+    let novaOrdemA, novaOrdemB;
+    if (ordemAtual === ordemTroca) {
+        novaOrdemA = novoIdx + 1;
+        novaOrdemB = idx + 1;
+    } else {
+        novaOrdemA = ordemTroca;
+        novaOrdemB = ordemAtual;
+    }
+
     // Atualizar local
     const linksA = todosLinks.filter(l => l.categoria === categoria && l.subcategoria === subcategoria);
     const linksB = todosLinks.filter(l => l.categoria === categoria && l.subcategoria === subTroca);
-    linksA.forEach(l => l.ordemSubcat = ordemTroca);
-    linksB.forEach(l => l.ordemSubcat = ordemAtual);
+    linksA.forEach(l => l.ordemSubcat = novaOrdemA);
+    linksB.forEach(l => l.ordemSubcat = novaOrdemB);
 
     renderizarLinks(todosLinks);
 
     // Salvar
     const updates = [];
-    linksA.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[ordemTroca]] }));
-    linksB.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[ordemAtual]] }));
+    linksA.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[novaOrdemA]] }));
+    linksB.forEach(l => updates.push({ range: `Sheet1!D${l.linha}`, values: [[novaOrdemB]] }));
     try {
         await fetch(batchUpdateUrl(), {
             method: 'POST', headers: authHeaders(),
