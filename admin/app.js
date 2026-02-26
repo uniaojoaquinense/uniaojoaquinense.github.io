@@ -65,8 +65,8 @@ async function onLoginSuccess() {
 // ═══════════════════════════════════════════════════════
 // API helpers
 // ═══════════════════════════════════════════════════════
-function sheetsUrl(range, params = '') {
-    return `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}${params}`;
+function sheetsUrl(range, params = '', suffix = '') {
+    return `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}${suffix}${params}`;
 }
 
 function authHeaders() {
@@ -177,7 +177,7 @@ async function salvarLink() {
 
     try {
         if (modoModal === 'adicionar') {
-            await fetch(sheetsUrl(RANGE_LINKS + ':append', '?valueInputOption=USER_ENTERED'), {
+            await fetch(sheetsUrl(RANGE_LINKS, '?valueInputOption=USER_ENTERED', ':append'), {
                 method: 'POST',
                 headers: authHeaders(),
                 body: JSON.stringify({ values: [row] })
