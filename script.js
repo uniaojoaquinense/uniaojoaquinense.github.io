@@ -1,12 +1,10 @@
-// ============================================================
-// CONFIGURAÇÃO — preencha com os dados da sua planilha
-// ============================================================
-const API_KEY = 'AIzaSyAmW-hkAUHCnYc_4CIcN99HiNAlbc31-Qs';
-const SPREADSHEET_ID = '14wrXo2lohTXepgApiqsSQNIzaNH1bvjMLOaCXK65hWU';
-const SHEET_NAME = 'Sheet1';          // aba com os links
-const SHEET_CONFIG = 'Sheet2';        // aba com as configurações visuais
-const RANGE = `${SHEET_NAME}!A:F`;   // colunas A até F
-const RANGE_CONFIG = `${SHEET_CONFIG}!A:B`; // chave | valor
+// Usa CONFIG de config.js (carregado antes deste script)
+const API_KEY = CONFIG.API_KEY;
+const SPREADSHEET_ID = CONFIG.SHEET_ID;
+const SHEET_NAME = CONFIG.SHEET_LINKS;
+const SHEET_CONFIG = CONFIG.SHEET_CONFIG;
+const RANGE = CONFIG.RANGE_LINKS;
+const RANGE_CONFIG = CONFIG.RANGE_CONFIG;
 
 
 // ============================================================

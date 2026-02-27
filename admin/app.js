@@ -1,12 +1,10 @@
-// ═══════════════════════════════════════════════════════
-// Configuração
-// ═══════════════════════════════════════════════════════
-const CLIENT_ID = '897683631001-ugml9ertq7bldbtmsugcejhitav6l4dp.apps.googleusercontent.com';
-const API_KEY = 'AIzaSyAmW-hkAUHCnYc_4CIcN99HiNAlbc31-Qs';
-const SHEET_ID = '14wrXo2lohTXepgApiqsSQNIzaNH1bvjMLOaCXK65hWU';
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets profile email';
-const RANGE_LINKS = 'Sheet1!A:F';
-const RANGE_CONFIG = 'Sheet2!A:B';
+// Usa CONFIG de config.js (carregado antes deste script)
+const CLIENT_ID = CONFIG.CLIENT_ID;
+const API_KEY = CONFIG.API_KEY;
+const SHEET_ID = CONFIG.SHEET_ID;
+const SCOPES = CONFIG.SCOPES;
+const RANGE_LINKS = CONFIG.RANGE_LINKS;
+const RANGE_CONFIG = CONFIG.RANGE_CONFIG;
 
 // ═══════════════════════════════════════════════════════
 // Estado
