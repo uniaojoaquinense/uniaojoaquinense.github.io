@@ -88,7 +88,21 @@
                     <label>Instagram URL</label>
                     <input type="url" id="cfg-instagram" placeholder="https://instagram.com/...">
                 </div>
-                <button class="btn-primary btn-full" onclick="salvarConfig()">
+                <div class="campo">
+                    <label>Logo URL <span class="hint">(opcional — padrão: brasao.png)</span></label>
+                    <input type="url" id="cfg-logo" placeholder="https://drive.google.com/file/d/.../view">
+                </div>
+
+                <div class="campo">
+                    <label>Imagens do Slider</label>
+                    <div id="slides-container"></div>
+                    <button type="button" class="btn-secondary btn-full" onclick="adicionarSlide()"
+                        style="margin-top:8px">
+                        <i class="fa-solid fa-plus"></i> Adicionar slide
+                    </button>
+                </div>
+
+                <button class="btn-primary btn-full" onclick="salvarConfig()" style="margin-top:16px">
                     <i class="fa-solid fa-floppy-disk"></i> Salvar configurações
                 </button>
                 <div id="config-status"></div>

@@ -367,33 +367,66 @@ async function moverCategoria(categoria, direcao) {
 }
 
 // ═══════════════════════════════════════════════════════
-// Config (Sheet2)
+// Config (Sheet2) — handle, facebook, instagram, logo, slides
 // ═══════════════════════════════════════════════════════
 async function carregarConfig() {
     try {
         const r = await fetch(sheetsUrl(RANGE_CONFIG), { headers: authHeaders() });
         const data = await r.json();
+        const container = document.getElementById('slides-container');
+        container.innerHTML = '';
+        let slideCount = 0;
         (data.values || []).forEach(row => {
             const chave = (row[0] || '').trim().toLowerCase();
             const valor = (row[1] || '').trim();
             if (chave === 'handle') document.getElementById('cfg-handle').value = valor;
-            if (chave === 'facebook') document.getElementById('cfg-facebook').value = valor;
-            if (chave === 'instagram') document.getElementById('cfg-instagram').value = valor;
+            else if (chave === 'facebook') document.getElementById('cfg-facebook').value = valor;
+            else if (chave === 'instagram') document.getElementById('cfg-instagram').value = valor;
+            else if (chave === 'logo') document.getElementById('cfg-logo').value = valor;
+            else if (chave.startsWith('slide') && valor) { slideCount++; adicionarSlide(valor); }
         });
+        if (slideCount === 0) adicionarSlide('');
     } catch (_) { }
+}
+
+function adicionarSlide(valor = '') {
+    const container = document.getElementById('slides-container');
+    const idx = container.children.length + 1;
+    const div = document.createElement('div');
+    div.className = 'slide-row';
+    div.innerHTML = `
+    <span class="slide-num">${idx}</span>
+    <input type="url" class="slide-input" value="${valor}" placeholder="https://drive.google.com/file/d/.../view">
+    <button type="button" class="btn-icon btn-danger-icon" onclick="removerSlide(this)" title="Remover"><i class="fa-solid fa-xmark"></i></button>
+  `;
+    container.appendChild(div);
+}
+
+function removerSlide(btn) {
+    btn.closest('.slide-row').remove();
+    document.querySelectorAll('#slides-container .slide-num').forEach((el, i) => el.textContent = i + 1);
 }
 
 async function salvarConfig() {
     const handle = document.getElementById('cfg-handle').value.trim();
     const facebook = document.getElementById('cfg-facebook').value.trim();
     const instagram = document.getElementById('cfg-instagram').value.trim();
+    const logo = document.getElementById('cfg-logo').value.trim();
+    const slides = [];
+    document.querySelectorAll('#slides-container .slide-input').forEach(input => {
+        const v = input.value.trim(); if (v) slides.push(v);
+    });
+    const values = [['handle', handle], ['facebook', facebook], ['instagram', instagram], ['logo', logo]];
+    slides.forEach((url, i) => values.push([`slide${i + 1}`, url]));
     const statusEl = document.getElementById('config-status');
     statusEl.textContent = 'Salvando...'; statusEl.style.color = 'var(--text-muted)';
     try {
-        await fetch(sheetsUrl('Sheet2!A1:B3', '?valueInputOption=USER_ENTERED'), {
-            method: 'PUT', headers: authHeaders(),
-            body: JSON.stringify({ values: [['handle', handle], ['facebook', facebook], ['instagram', instagram]] })
+        await fetch(sheetsUrl(`Sheet2!A1:B${values.length}`, '?valueInputOption=USER_ENTERED'), {
+            method: 'PUT', headers: authHeaders(), body: JSON.stringify({ values })
         });
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(`Sheet2!A${values.length + 1}:B50`)}:clear`, {
+            method: 'POST', headers: authHeaders()
+        }).catch(() => { });
         statusEl.textContent = '✅ Salvo!'; statusEl.style.color = 'var(--success)';
         toast('✅ Configurações salvas!', 'success');
     } catch (e) { statusEl.textContent = 'Erro: ' + e.message; statusEl.style.color = 'var(--danger)'; }

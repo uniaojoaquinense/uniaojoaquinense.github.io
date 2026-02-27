@@ -440,6 +440,50 @@ header h1 {
     box-shadow: none;
 }
 
+/* ── Slides dinâmicos ── */
+.slide-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.slide-num {
+    color: var(--text-muted);
+    font-size: 12px;
+    min-width: 18px;
+    text-align: center;
+}
+
+.slide-input {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+}
+
+.slide-input:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.btn-danger-icon {
+    color: var(--danger);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.btn-danger-icon:hover {
+    opacity: 1;
+}
+
 /* ── Modal ── */
 #modal-overlay {
     display: none;
