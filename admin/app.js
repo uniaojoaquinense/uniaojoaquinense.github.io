@@ -168,7 +168,7 @@ function renderizarLinks(links) {
                <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, -1)" ${bi === 0 ? 'disabled' : ''}>↑</button>
                <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, 1)" ${bi === blocos.length - 1 ? 'disabled' : ''}>↓</button>
              </span>` : '';
-                html += `<div class="subcat-header"><span>${bloco.nome}</span>${subBtns}</div>`;
+                html += `<div class="subcat-section"><div class="subcat-header"><span>${bloco.nome}</span>${subBtns}</div>`;
             }
 
             // Links do bloco
@@ -202,6 +202,7 @@ function renderizarLinks(links) {
           ${arrows}
         </div>`;
             });
+            if (bloco.tipo === 'subcategoria') html += '</div>';
         });
     });
 

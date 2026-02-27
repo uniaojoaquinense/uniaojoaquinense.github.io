@@ -395,15 +395,32 @@ header h1 {
     margin-left: 8px;
 }
 
+.subcat-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.subcat-section .link-card {
+    margin-bottom: 8px;
+}
+
+.subcat-section .link-card:last-child {
+    margin-bottom: 0;
+}
+
 .subcat-header {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-muted);
-    padding: 10px 4px 4px;
+    color: var(--gold-light);
+    padding: 0 0 10px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-style: italic;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .btn-reorder-sm {
