@@ -96,16 +96,18 @@ function applyConfig(config) {
     handleEl.textContent = '@' + config.handle.replace(/^@/, '');
   }
 
-  // Facebook
+  // Facebook — só exibe se tiver URL
   const fbEl = document.getElementById('link-facebook');
   if (fbEl && config.facebook) {
     fbEl.href = config.facebook;
+    fbEl.style.display = 'block';
   }
 
-  // Instagram
+  // Instagram — só exibe se tiver URL
   const igEl = document.getElementById('link-instagram');
   if (igEl && config.instagram) {
     igEl.href = config.instagram;
+    igEl.style.display = 'block';
   }
 
   // Logo — converte link do Drive automaticamente se necessário
