@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1a1a2e">
-    <meta name="description" content="Painel administrativo - União Joaquinense">
-    <title>Admin — União Joaquinense</title>
+    <meta name="description" content="">
+    <title>Admin</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -20,7 +20,7 @@
         <div class="login-card">
             <div class="login-logo">🔗</div>
             <h1>Painel Admin</h1>
-            <p class="login-sub">União Joaquinense</p>
+            <p class="login-sub" id="login-sub"></p>
             <button id="btn-login" onclick="handleLogin()">
                 <i class="fa-brands fa-google"></i> Entrar com Google
             </button>
@@ -76,6 +76,14 @@
         <!-- ══ Tab: Configurações ══ -->
         <div id="tab-config" class="tab-content">
             <div class="config-form">
+                <div class="campo">
+                    <label>Nome da organização</label>
+                    <input type="text" id="cfg-nome" placeholder="Ex: União Joaquinense">
+                </div>
+                <div class="campo">
+                    <label>Descrição do site <span class="hint">(meta description)</span></label>
+                    <input type="text" id="cfg-descricao" placeholder="Ex: Links e recursos da...">
+                </div>
                 <div class="campo">
                     <label>Handle (@)</label>
                     <input type="text" id="cfg-handle" placeholder="@seunome">

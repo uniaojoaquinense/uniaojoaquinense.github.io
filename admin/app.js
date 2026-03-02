@@ -379,7 +379,23 @@ async function carregarConfig() {
         (data.values || []).forEach(row => {
             const chave = (row[0] || '').trim().toLowerCase();
             const valor = (row[1] || '').trim();
-            if (chave === 'handle') document.getElementById('cfg-handle').value = valor;
+            if (chave === 'nome') {
+                document.getElementById('cfg-nome').value = valor;
+                // Aplica dinamicamente
+                if (valor) {
+                    document.title = 'Admin — ' + valor;
+                    const loginSub = document.getElementById('login-sub');
+                    if (loginSub) loginSub.textContent = valor;
+                }
+            }
+            else if (chave === 'descricao') {
+                document.getElementById('cfg-descricao').value = valor;
+                if (valor) {
+                    const meta = document.querySelector('meta[name="description"]');
+                    if (meta) meta.setAttribute('content', 'Painel administrativo - ' + valor);
+                }
+            }
+            else if (chave === 'handle') document.getElementById('cfg-handle').value = valor;
             else if (chave === 'facebook') document.getElementById('cfg-facebook').value = valor;
             else if (chave === 'instagram') document.getElementById('cfg-instagram').value = valor;
             else if (chave === 'logo') document.getElementById('cfg-logo').value = valor;
@@ -408,6 +424,8 @@ function removerSlide(btn) {
 }
 
 async function salvarConfig() {
+    const nome = document.getElementById('cfg-nome').value.trim();
+    const descricao = document.getElementById('cfg-descricao').value.trim();
     const handle = document.getElementById('cfg-handle').value.trim();
     const facebook = document.getElementById('cfg-facebook').value.trim();
     const instagram = document.getElementById('cfg-instagram').value.trim();
@@ -416,7 +434,7 @@ async function salvarConfig() {
     document.querySelectorAll('#slides-container .slide-input').forEach(input => {
         const v = input.value.trim(); if (v) slides.push(v);
     });
-    const values = [['handle', handle], ['facebook', facebook], ['instagram', instagram], ['logo', logo]];
+    const values = [['nome', nome], ['descricao', descricao], ['handle', handle], ['facebook', facebook], ['instagram', instagram], ['logo', logo]];
     slides.forEach((url, i) => values.push([`slide${i + 1}`, url]));
     const statusEl = document.getElementById('config-status');
     statusEl.textContent = 'Salvando...'; statusEl.style.color = 'var(--text-muted)';
@@ -533,5 +551,22 @@ function modalStatus(msg, type) {
 // ═══════════════════════════════════════════════════════
 // Init
 // ═══════════════════════════════════════════════════════
-window.addEventListener('load', () => { initTokenClient(); });
+window.addEventListener('load', () => {
+    initTokenClient();
+    // Carrega nome da organização (API pública, sem auth)
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+            (data.values || []).forEach(row => {
+                const chave = (row[0] || '').trim().toLowerCase();
+                const valor = (row[1] || '').trim();
+                if (chave === 'nome' && valor) {
+                    document.title = 'Admin — ' + valor;
+                    const loginSub = document.getElementById('login-sub');
+                    if (loginSub) loginSub.textContent = valor;
+                }
+            });
+        })
+        .catch(() => { });
+});
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => { }); }

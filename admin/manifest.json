@@ -1,6 +1,6 @@
 {
-  "name": "Admin — União Joaquinense",
-  "short_name": "Admin UJ",
+  "name": "Admin",
+  "short_name": "Admin",
   "description": "Painel de edição de links",
   "start_url": "/admin/",
   "scope": "/admin/",

@@ -84,34 +84,55 @@ function converterUrlDrive(url) {
 /**
  * Aplica as configurações visuais no DOM.
  * Campos suportados na Sheet2:
+ *   nome      → nome da organização (title, alt da logo)
+ *   descricao → texto da meta description
  *   handle    → texto exibido abaixo da logo (sem o @)
  *   facebook  → URL do Facebook
  *   instagram → URL do Instagram
  *   logo      → URL de imagem para a logo (aceita links do Drive)
  */
 function applyConfig(config) {
-  // Handle (@usuario)
-  const handleEl = document.getElementById('handle');
-  if (handleEl && config.handle) {
-    handleEl.textContent = '@' + config.handle.replace(/^@/, '');
+  // Nome da organização — title + alt da logo
+  if (config.nome) {
+    document.title = config.nome;
+    const logoEl = document.getElementById('logo-img');
+    if (logoEl) logoEl.alt = 'Brasão ' + config.nome;
   }
 
-  // Facebook
+  // Meta description
+  if (config.descricao) {
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', config.descricao);
+  }
+
+  // Handle (@usuario) — oculta se vazio
+  const handleEl = document.getElementById('handle');
+  if (handleEl) {
+    if (config.handle) {
+      handleEl.textContent = '@' + config.handle.replace(/^@/, '');
+    } else {
+      handleEl.style.display = 'none';
+    }
+  }
+
+  // Facebook — só exibe se tiver URL
   const fbEl = document.getElementById('link-facebook');
   if (fbEl && config.facebook) {
     fbEl.href = config.facebook;
+    fbEl.style.display = 'block';
   }
 
-  // Instagram
+  // Instagram — só exibe se tiver URL
   const igEl = document.getElementById('link-instagram');
   if (igEl && config.instagram) {
     igEl.href = config.instagram;
+    igEl.style.display = 'block';
   }
 
   // Logo — converte link do Drive automaticamente se necessário
-  const logoEl = document.getElementById('logo-img');
-  if (logoEl && config.logo) {
-    logoEl.src = converterUrlDrive(config.logo);
+  const logoImgEl = document.getElementById('logo-img');
+  if (logoImgEl && config.logo) {
+    logoImgEl.src = converterUrlDrive(config.logo);
   }
 
   // Slider — coleta campos slide1, slide2, ... slideN
