@@ -1,5 +1,5 @@
 // Usa CONFIG de config.js (carregado antes deste script)
-const API_KEY = CONFIG.API_KEY;
+const PROXY_URL = CONFIG.PROXY_URL;
 const SPREADSHEET_ID = CONFIG.SHEET_ID;
 const SHEET_NAME = CONFIG.SHEET_LINKS;
 const SHEET_CONFIG = CONFIG.SHEET_CONFIG;
@@ -34,7 +34,7 @@ const MOCK_DATA = [
  */
 async function fetchConfig() {
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`;
+    const url = `${PROXY_URL}?range=${encodeURIComponent(RANGE_CONFIG)}`;
     const response = await fetch(url);
     if (!response.ok) return {};
 
@@ -157,7 +157,7 @@ async function fetchLinks() {
     return MOCK_DATA;
   }
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE)}?key=${API_KEY}`;
+  const url = `${PROXY_URL}?range=${encodeURIComponent(RANGE)}`;
   const response = await fetch(url);
 
   if (!response.ok) {
