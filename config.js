@@ -1,11 +1,7 @@
-// ═══════════════════════════════════════════════════════
-// CONFIGURAÇÃO CENTRALIZADA
-// Edite APENAS este arquivo para alterar credenciais
-// ═══════════════════════════════════════════════════════
 const CONFIG = {
-    PROXY_URL: 'https://polished-cherry-132b.migueldonizeti96.workers.dev',
+    PROXY_URL: 'https://demolay-proxy.workers.Migueldonizeti96@gmail.com's Account.workers.dev',
     CLIENT_ID: '897683631001-ugml9ertq7bldbtmsugcejhitav6l4dp.apps.googleusercontent.com',
-    SHEET_ID: '14wrXo2lohTXepgApiqsSQNIzaNH1bvjMLOaCXK65hWU',
+    SHEET_ID: '1A4JTKkXsBv3ssp1ll5cTf3JjLi8Yfo58Kbir4k1isCM',
     SCOPES: 'https://www.googleapis.com/auth/spreadsheets profile email',
     SHEET_LINKS: 'Sheet1',
     SHEET_CONFIG: 'Sheet2',
