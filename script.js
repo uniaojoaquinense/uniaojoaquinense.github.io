@@ -1,10 +1,11 @@
 // Usa CONFIG de config.js (carregado antes deste script)
-const PROXY_URL = CONFIG.PROXY_URL;
-const SPREADSHEET_ID = CONFIG.SHEET_ID;
-const SHEET_NAME = CONFIG.SHEET_LINKS;
-const SHEET_CONFIG = CONFIG.SHEET_CONFIG;
-const RANGE = CONFIG.RANGE_LINKS;
-const RANGE_CONFIG = CONFIG.RANGE_CONFIG;
+// Se CONFIG nao estiver definido, usa fallback silencioso para exibir dados mockados
+const PROXY_URL = typeof CONFIG !== 'undefined' ? CONFIG.PROXY_URL : '';
+const SPREADSHEET_ID = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_ID : '';
+const SHEET_NAME = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_LINKS : 'Sheet1';
+const SHEET_CONFIG = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_CONFIG : 'Sheet2';
+const RANGE = typeof CONFIG !== 'undefined' ? CONFIG.RANGE_LINKS : 'Sheet1!A:F';
+const RANGE_CONFIG = typeof CONFIG !== 'undefined' ? CONFIG.RANGE_CONFIG : 'Sheet2!A:B';
 
 
 // ============================================================
@@ -152,7 +153,7 @@ function applyConfig(config) {
  * Se SPREADSHEET_ID não foi configurado, usa MOCK_DATA.
  */
 async function fetchLinks() {
-  if (SPREADSHEET_ID === 'COLE_O_ID_DA_PLANILHA_AQUI') {
+  if (!SPREADSHEET_ID || SPREADSHEET_ID === 'COLE_O_ID_DA_PLANILHA_AQUI') {
     console.info('Usando dados mockados. Configure SPREADSHEET_ID no script.js.');
     return MOCK_DATA;
   }
