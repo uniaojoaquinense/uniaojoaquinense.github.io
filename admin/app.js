@@ -559,10 +559,11 @@ function modalStatus(msg, type) {
 // Init
 // ═══════════════════════════════════════════════════════
 window.addEventListener('load', () => {
-    // Carrega nome da organização (API pública, sem auth)
+    // Carrega nome da organização (fallback silencioso se falhar)
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`)
-        .then(r => r.json())
+        .then(r => r.ok ? r.json() : null)
         .then(data => {
+            if (!data) return;
             (data.values || []).forEach(row => {
                 const chave = (row[0] || '').trim().toLowerCase();
                 const valor = (row[1] || '').trim();

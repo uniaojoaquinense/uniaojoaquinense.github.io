@@ -54,8 +54,6 @@ async function fetchSheet(range) {
 async function fetchConfig() {
   try {
     const data = await fetchSheet(RANGE_CONFIG);
-
-    const data = await response.json();
     const rows = data.values || [];
 
     // Constrói objeto { chave: valor } ignorando a linha de cabeçalho
