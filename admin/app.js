@@ -559,7 +559,6 @@ function modalStatus(msg, type) {
 // Init
 // ═══════════════════════════════════════════════════════
 window.addEventListener('load', () => {
-    initTokenClient();
     // Carrega nome da organização (API pública, sem auth)
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`)
         .then(r => r.json())
