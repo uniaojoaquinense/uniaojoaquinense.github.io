@@ -22,7 +22,7 @@ let modoReorganizar = false;
 // ═══════════════════════════════════════════════════════
 function handleLogin() {
   const origin = encodeURIComponent(window.location.origin);
-  const popup = window.open(WIZARD_URL + '/oauth-popup?origin=' + origin, 'oauth-popup', 'width=500,height=700');
+  const popup = window.open(WIZARD_URL + '/oauth-popup.html?origin=' + origin, 'oauth-popup', 'width=500,height=700');
   if (!popup) {
     toast('Popup bloqueado. Permita popups para este site.', 'error');
   }
