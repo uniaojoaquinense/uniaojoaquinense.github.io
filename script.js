@@ -1,7 +1,6 @@
 // Usa CONFIG de config.js (carregado antes deste script)
 // Se CONFIG nao estiver definido, usa fallback silencioso para exibir dados mockados
 const PROXY_URL = typeof CONFIG !== 'undefined' ? CONFIG.PROXY_URL : '';
-const API_KEY = typeof CONFIG !== 'undefined' ? CONFIG.API_KEY : '';
 const SPREADSHEET_ID = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_ID : '';
 const SHEET_NAME = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_LINKS : 'Sheet1';
 const SHEET_CONFIG = typeof CONFIG !== 'undefined' ? CONFIG.SHEET_CONFIG : 'Sheet2';
@@ -35,20 +34,9 @@ const MOCK_DATA = [
  * Chaves esperadas: handle, facebook, instagram
  */
 async function fetchSheet(range) {
-  if (PROXY_URL) {
-    try {
-      const r = await fetch(`${PROXY_URL}?range=${encodeURIComponent(range)}`);
-      if (r.ok) return r.json();
-    } catch (_) {}
-  }
-  if (API_KEY && SPREADSHEET_ID) {
-    const r = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`
-    );
-    if (!r.ok) throw new Error(`Erro ao buscar planilha: ${r.status} ${r.statusText}`);
-    return r.json();
-  }
-  throw new Error('Sem proxy e sem API_KEY para acessar a planilha');
+  const r = await fetch(`${PROXY_URL}?range=${encodeURIComponent(range)}`);
+  if (!r.ok) throw new Error(`Erro ao buscar planilha: ${r.status} ${r.statusText}`);
+  return r.json();
 }
 
 async function fetchConfig() {
