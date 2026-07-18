@@ -1,12 +1,12 @@
 // Usa CONFIG de config.js (carregado antes deste script)
 // Se CONFIG nao estiver definido, usa fallback para exibir erro sem quebrar
 const _C = typeof CONFIG !== 'undefined' ? CONFIG : {};
-const CLIENT_ID = _C.CLIENT_ID || '';
 const API_KEY = _C.API_KEY || '';
 const SHEET_ID = _C.SHEET_ID || '';
 const SCOPES = _C.SCOPES || '';
 const RANGE_LINKS = _C.RANGE_LINKS || 'Sheet1!A:F';
 const RANGE_CONFIG = _C.RANGE_CONFIG || 'Sheet2!A:B';
+const WIZARD_URL = _C.WIZARD_URL || 'https://demotree-wizard.vercel.app';
 
 // ═══════════════════════════════════════════════════════
 // Estado
@@ -20,25 +20,29 @@ let modoReorganizar = false;
 // ═══════════════════════════════════════════════════════
 // Auth
 // ═══════════════════════════════════════════════════════
-let tokenClient;
-function initTokenClient() {
-    if (!CLIENT_ID) { toast('config.js não carregado ou CLIENT_ID ausente.', 'error'); return; }
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID, scope: SCOPES,
-        callback: (resp) => {
-            if (resp.error) { toast('Erro no login: ' + resp.error, 'error'); return; }
-            accessToken = resp.access_token;
-            onLoginSuccess();
-        },
-    });
+function handleLogin() {
+  const origin = encodeURIComponent(window.location.origin);
+  const popup = window.open(WIZARD_URL + '/oauth-popup?origin=' + origin, 'oauth-popup', 'width=500,height=700');
+  if (!popup) {
+    toast('Popup bloqueado. Permita popups para este site.', 'error');
+  }
 }
-function handleLogin() { if (!tokenClient) initTokenClient(); if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' }); }
+
 function handleLogout() {
-    if (accessToken) google.accounts.oauth2.revoke(accessToken);
-    accessToken = null;
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('painel').style.display = 'none';
+  if (accessToken && typeof google !== 'undefined' && google.accounts?.oauth2?.revoke) {
+    google.accounts.oauth2.revoke(accessToken);
+  }
+  accessToken = null;
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('painel').style.display = 'none';
 }
+
+window.addEventListener('message', async (event) => {
+  if (event.data?.type !== 'google-oauth') return;
+  if (!event.data.accessToken) return;
+  accessToken = event.data.accessToken;
+  onLoginSuccess();
+});
 async function onLoginSuccess() {
     try {
         const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } });
