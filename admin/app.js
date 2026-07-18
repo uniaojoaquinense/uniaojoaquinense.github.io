@@ -1,10 +1,12 @@
 // Usa CONFIG de config.js (carregado antes deste script)
-const CLIENT_ID = CONFIG.CLIENT_ID;
-const API_KEY = CONFIG.API_KEY;
-const SHEET_ID = CONFIG.SHEET_ID;
-const SCOPES = CONFIG.SCOPES;
-const RANGE_LINKS = CONFIG.RANGE_LINKS;
-const RANGE_CONFIG = CONFIG.RANGE_CONFIG;
+// Se CONFIG nao estiver definido, usa fallback para exibir erro sem quebrar
+const _C = typeof CONFIG !== 'undefined' ? CONFIG : {};
+const CLIENT_ID = _C.CLIENT_ID || '';
+const API_KEY = _C.API_KEY || '';
+const SHEET_ID = _C.SHEET_ID || '';
+const SCOPES = _C.SCOPES || '';
+const RANGE_LINKS = _C.RANGE_LINKS || 'Sheet1!A:F';
+const RANGE_CONFIG = _C.RANGE_CONFIG || 'Sheet2!A:B';
 
 // ═══════════════════════════════════════════════════════
 // Estado
@@ -20,6 +22,7 @@ let modoReorganizar = false;
 // ═══════════════════════════════════════════════════════
 let tokenClient;
 function initTokenClient() {
+    if (!CLIENT_ID) { toast('config.js não carregado ou CLIENT_ID ausente.', 'error'); return; }
     tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID, scope: SCOPES,
         callback: (resp) => {
@@ -29,7 +32,7 @@ function initTokenClient() {
         },
     });
 }
-function handleLogin() { if (!tokenClient) initTokenClient(); tokenClient.requestAccessToken({ prompt: 'consent' }); }
+function handleLogin() { if (!tokenClient) initTokenClient(); if (tokenClient) tokenClient.requestAccessToken({ prompt: 'consent' }); }
 function handleLogout() {
     if (accessToken) google.accounts.oauth2.revoke(accessToken);
     accessToken = null;
