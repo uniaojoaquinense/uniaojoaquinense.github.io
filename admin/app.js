@@ -406,6 +406,10 @@ async function carregarConfig() {
             else if (chave === 'facebook') document.getElementById('cfg-facebook').value = valor;
             else if (chave === 'instagram') document.getElementById('cfg-instagram').value = valor;
             else if (chave === 'logo') document.getElementById('cfg-logo').value = valor;
+            else if (chave === 'cor_fundo') {
+                document.getElementById('cfg-cor-fundo').value = valor || '#D10D00';
+                document.getElementById('cfg-cor-fundo-text').value = valor || '';
+            }
             else if (chave.startsWith('slide') && valor) { slideCount++; adicionarSlide(valor); }
         });
         if (slideCount === 0) adicionarSlide('');
@@ -437,11 +441,12 @@ async function salvarConfig() {
     const facebook = document.getElementById('cfg-facebook').value.trim();
     const instagram = document.getElementById('cfg-instagram').value.trim();
     const logo = document.getElementById('cfg-logo').value.trim();
+    const corFundo = document.getElementById('cfg-cor-fundo-text').value.trim();
     const slides = [];
     document.querySelectorAll('#slides-container .slide-input').forEach(input => {
         const v = input.value.trim(); if (v) slides.push(v);
     });
-    const values = [['nome', nome], ['descricao', descricao], ['handle', handle], ['facebook', facebook], ['instagram', instagram], ['logo', logo]];
+    const values = [['nome', nome], ['descricao', descricao], ['handle', handle], ['facebook', facebook], ['instagram', instagram], ['logo', logo], ['cor_fundo', corFundo]];
     slides.forEach((url, i) => values.push([`slide${i + 1}`, url]));
     const statusEl = document.getElementById('config-status');
     statusEl.textContent = 'Salvando...'; statusEl.style.color = 'var(--text-muted)';

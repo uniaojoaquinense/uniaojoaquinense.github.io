@@ -147,6 +147,13 @@ function applyConfig(config) {
   }
   if (slides.length > 0) buildSlider(slides);
 
+  // Cor de fundo
+  if (config.cor_fundo) {
+    document.body.style.background = config.cor_fundo;
+  } else {
+    document.body.style.background = '';
+  }
+
   // favicon.ico fica como arquivo estático na raiz do repositório
 }
 

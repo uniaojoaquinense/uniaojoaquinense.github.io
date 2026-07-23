@@ -102,6 +102,14 @@
                 </div>
 
                 <div class="campo">
+                    <label>Cor de fundo <span class="hint">(hexadecimal — vazio = gradiente padrão)</span></label>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input type="color" id="cfg-cor-fundo" value="#D10D00" style="width:48px;height:40px;padding:2px;flex:none">
+                        <input type="text" id="cfg-cor-fundo-text" placeholder="#D10D00" style="flex:1">
+                    </div>
+                </div>
+
+                <div class="campo">
                     <label>Imagens do Slider</label>
                     <div id="slides-container"></div>
                     <button type="button" class="btn-secondary btn-full" onclick="adicionarSlide()"
@@ -181,6 +189,18 @@
     <!-- Scripts -->
     <script src="../config.js"></script>
     <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var colorInput = document.getElementById('cfg-cor-fundo');
+            var textInput = document.getElementById('cfg-cor-fundo-text');
+            if (colorInput && textInput) {
+                colorInput.addEventListener('input', function () { textInput.value = this.value; });
+                textInput.addEventListener('input', function () {
+                    if (/^#[0-9a-f]{6}$/i.test(this.value)) colorInput.value = this.value;
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
