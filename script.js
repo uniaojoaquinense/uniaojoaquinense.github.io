@@ -147,9 +147,9 @@ function applyConfig(config) {
   }
   if (slides.length > 0) buildSlider(slides);
 
-  // Cor de fundo
+  // Cor de fundo — degradê do topo (customizável) ao preto (fixo)
   if (config.cor_fundo) {
-    document.body.style.background = config.cor_fundo;
+    document.body.style.background = `linear-gradient(${config.cor_fundo}, #000000)`;
   } else {
     document.body.style.background = '';
   }
